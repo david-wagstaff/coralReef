@@ -5,6 +5,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    html {
+      background-color: black;
+    }
+  </style>
 </head>
 <!-- TODO list
 - Get TODO extension
@@ -25,122 +30,89 @@ As you emerge from hyperspace, you set course for a new hive.
 
 May the course be with you.
 -->
+<!-- To Left mouse click on computer
+Single tap on phone -->
+
+<!-- <button id="startBtn" onClick="toggleFullScreen()">Toggle Full Screen</button> -->
 
 <body>
-  <button id="startBtn" onClick="toggleFullScreen()">Toggle Full Screen</button>
   <main></main>
-      
+
 <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.min.js"></script>
 
 <script>
-function toggleFullScreen() {
-  let fs = fullscreen()
-  fullscreen(!fs)
+// function toggleFullScreen() {
+//   let fs = fullscreen()
+//   fullscreen(!fs)
+//   resizeCanvas(windowWidth, windowHeight)
+// }
+
+let font;
+
+function preload() {
+  font = loadFont('https://raw.githubusercontent.com/tonsky/FiraCode/master/distr/ttf/FiraCode-Regular.ttf');
 }
 
-// let globalFlock
-let redFlock
-let blueFlock
+function everythingDies() {
+  greenFlock.boids.length = 0
+  blueFlock.boids.length = 0
+  yellowFlock.boids.length = 0
+  background(0);
+  textFont(font);
+  textSize(width/20);
+  textAlign(CENTER, CENTER);
+  fill('red')
+  // let time = millis();
+  // rotateX(time / 10000);
+  // rotateZ(time / 12340);
+  text('Sammy killed her fish', width/2,height/2);
+  setTimeout(function(){ die = false; }, 1500);
+  // die = false
+}
+
 let greenFlock
-let purpleFlock
+let blueFlock
 let yellowFlock
+let die = false
+
+function mouseClicked({shiftKey, altKey, ctrlKey}) {
+  if (shiftKey) {
+    for (let i = 0; i < 100; i++) {
+      greenFlock.addBoid(new Plankton(mouseX, mouseY, random(-1, 1), random(-1, 1), random(1.5,3)/2))
+    }
+  }
+  else if (altKey) {
+    for (let i = 0; i < 9; i++) {
+      blueFlock.addBoid(new BlueFish(mouseX, mouseY, random(-1, 1), random(-1, 1), random(2,4)))
+    }
+  }
+  else if (ctrlKey) {
+    for (let i = 0; i < 3; i++) {
+      yellowFlock.addBoid(new Boid(mouseX, mouseY, random(-1, 1), random(-1, 1), random(3,6), '#ffffcc'))
+    }
+  }
+  else die=true //everythingDies()
+
+  return false; // prevent default
+}
 
 function setup() {
+  // fullscreen()
   // createCanvas(720, 400)
-  createCanvas(windowWidth-30, windowHeight-44)
-
-  // globalFlock = new Flock()
-  // let queen
-  // Add an initial set of boids into the system
-  redFlock = new Flock()
-  // queen = new Boid(width*(3/8), height*.25, 0, 1, 'red')
-  // queen.r = 6
-  // redFlock.addBoid(queen)
-  // globalFlock.addBoid(queen)
-  for (let i = 0; i < 3; i++) {
-    let b = new Boid(random(width*.25, width*.50), height*.25, random(-1, 1), random(0, 1), 'red', random(6,8))
-    redFlock.addBoid(b)
-    // globalFlock.addBoid(b)
-  }
-
-  purpleFlock = new Flock()
-  // queen = new Boid(width*(5/8), height*.25, 0, 1, 'purple')
-  // queen.r = 6
-  // purpleFlock.addBoid(queen)
-  // // globalFlock.addBoid(queen)
-  for (let i = 0; i < 7; i++) {
-    let b = new Boid(random(width*.50, width*.75), height*.25, random(-1, 1), random(0, 1), '#ffffcc', random(3,6))
-    purpleFlock.addBoid(b)
-    // globalFlock.addBoid(b)
-  }
-
-  blueFlock = new Flock()
-  // queen = new Boid(width*(3/8), height*.75, 0, -1, 'blue')
-  // queen.r = 6
-  // blueFlock.addBoid(queen)
-  // // globalFlock.addBoid(queen)
-  for (let i = 0; i < 20; i++) {
-    let b = new Boid(random(width*.25, width*.50), height*.75, random(-1, 1), random(-1, 0), 'blue', random(2,4))
-    blueFlock.addBoid(b)
-    // globalFlock.addBoid(b)
-  }
-
+  createCanvas(windowWidth-10, windowHeight-20, WEBGL)
   greenFlock = new Flock()
-  // queen = new Boid(width*(5/8), height*.75, 0, -1, 'green')
-  // queen.r = 6
-  // greenFlock.addBoid(queen)
-  // // globalFlock.addBoid(queen)
-  for (let i = 0; i < 200; i++) {
-    let b = new Boid(random(width*.50, width*.75), height*.75, random(-1, 1), random(-1, 0), 'green',  random(1,3)/2)
-    greenFlock.addBoid(b)
-    // globalFlock.addBoid(b)
-  }
-
+  blueFlock = new Flock()
+  yellowFlock = new Flock()
 }
 
 function draw() {
   background(0)
-  // fill('blue')
-  // ellipse(width*(1/4), 50, 50, 40)
-  // ellipse(width*(1/4), 60, 80, 20)
-  // ellipse(width*(1/4), 70, 100, 20)
-  // fill('black')
-  // circle(width*(1/4), 70, 10)
-  
-  // fill('green')
-  // ellipse(width*(3/4), 50, 50, 40)
-  // ellipse(width*(3/4), 60, 80, 20)
-  // ellipse(width*(3/4), 70, 100, 20)
-  // fill('black')
-  // circle(width*(3/4), 70, 10)
-  
-  // fill('red')
-  // ellipse(width*(1/4), height-70, 50, 40)
-  // ellipse(width*(1/4), height-60, 80, 20)
-  // ellipse(width*(1/4), height-50, 100, 20)
-  // fill('black')
-  // circle(width*(1/4), height-50, 10)
-  
-  // fill('purple')
-  // ellipse(width*(3/4), height-70, 50, 40)
-  // ellipse(width*(3/4), height-60, 80, 20)
-  // ellipse(width*(3/4), height-50, 100, 20)
-  // fill('black')
-  // circle(width*(3/4), height-50, 10)
-
-  // globalFlock.run()
-  // console.log(redFlock, blueFlock, greenFlock, purpleFlock)
-  // redFlock.run()
-  blueFlock.run()
+  translate(-width/2,-height/2,0)
   greenFlock.run()
-  purpleFlock.run()
+  blueFlock.run()
+  yellowFlock.run()
+  if (die) everythingDies()
 }
-
-// Add a new boid into the System
-// function mouseDragged() {
-//   globalFlock.addBoid(new Boid(mouseX, mouseY, random(-1, 1), random(-1, 1), 'white'))
-// }
-
 
 
 // Flock object
@@ -149,8 +121,7 @@ function draw() {
 class Flock {
   
   constructor() {
-    // console.log('Flock')
-    this.boids = [] // Initialize the array
+    this.boids = []
   }
 
   run() {
@@ -167,14 +138,16 @@ class Flock {
 
 class Boid {
   
-  constructor(x, y, vx, vy, color, r=3.0) {
-    this.acceleration = createVector(0, 0)
-    this.velocity = createVector(vx, vy)
+  constructor(x, y, vx, vy, r, color) {
+
+    this.color = color
+    // console.log(color, this.color)
     this.position = createVector(x, y)
-    this.r = r
+    this.velocity = createVector(vx, vy)
+    this.acceleration = createVector(0, 0)
+    this.r = r * 2 //Math.max(width, height)
     this.maxspeed = 3    // Maximum speed
     this.maxforce = 0.05 // Maximum steering force
-    this.color = color
   }
 
   run(boids) {
@@ -196,18 +169,21 @@ class Boid {
     let coh = this.cohesion(boids)   // Cohesion
     let atr = this.attractions()     // Attractions
     let rep = this.repulsions()      // Repulsions
+    let ter = this.terror()
     // Arbitrarily weight these forces
     sep.mult(1.5)
     ali.mult(1.0)
     coh.mult(1.0)
     atr.mult(1.0)
     rep.mult(1.0)
+    ter.mult(9.9)
     // Add the force vectors to acceleration
     this.applyForce(sep)
     this.applyForce(ali)
     this.applyForce(coh)
     this.applyForce(atr)
     this.applyForce(rep)
+    this.applyForce(ter)
   }
 
   // Method to update location
@@ -242,6 +218,7 @@ class Boid {
     push()
     translate(this.position.x, this.position.y)
     rotate(theta)
+    stroke(this.color)
     beginShape()
     // TRIANGLE
     // vertex(0, -this.r * 2)
@@ -251,15 +228,16 @@ class Boid {
     // FISH
     vertex(0, -this.r * 1.5) // mouth
     vertex(-this.r/2, -this.r)    // left body upper
-    vertex(-this.r * 1.5, this.r*.5)  // left fin
+    vertex(-this.r * 1.5 + random(-2,2), this.r*.5 + random(-2,2))  // left fin tip
     vertex(-this.r/2, -this.r/20)  // left body lower
-    vertex(-this.r, this.r * 2)   // left tail
-    vertex(0, this.r * 1.6)  // between tail
-    vertex(this.r, this.r * 2)    // right tail
+    vertex(-this.r, this.r * 2)   // left tail tip
+    vertex(0, this.r * 1.6)  // between tails
+    vertex(this.r, this.r * 2)    // right tail tip
     vertex(this.r/2, -this.r/20)  // right body lower
-    vertex(this.r * 1.5, this.r*.5)  // right fin
+    vertex(this.r * 1.5 + random(-2,2), this.r*.5 + random(-2,2))  // right fin tip
     vertex(this.r/2, -this.r)    // right body upper
     endShape(CLOSE)
+    stroke('black')
     ellipse(0, 0, this.r*1.5, this.r * 3.5 )
     pop()
   }
@@ -305,6 +283,10 @@ class Boid {
       steer.limit(this.maxforce)
     }
     return steer
+  }
+
+  terror() {
+    return createVector(0, 0) // yellow fish aint scared of shit
   }
 
   // Alignment
@@ -415,51 +397,193 @@ class Boid {
     if (y <=w) return createVector(0, w).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
     if (y > height-w) return createVector(0, -w).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
 
-    // if (width - x < w) {
-    //   wall = createVector(0, this.position.y)
-    //   // console.log(w, width, x, w - width - x)
-    //   return createVector(-2 * (w - (width - x))/w, 0)
-    // }
-    // let d = p5.Vector.dist(this.position, )
-    // // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-    // if ((d > 0) && (d < desiredseparation)) {
-    //     // Calculate vector pointing away from neighbor
-    //     let diff = p5.Vector.sub(this.position, boid.position)
-    //     diff.normalize()
-    //     diff.div(d)           
-// ------------------------------------------
-
-    // if (x < w) { // (1 - (w-x)) / 25
-    //   return createVector( 2*(w-x)/w)     //w/(w-x), 0) ///(25-this.position.x)
-    // }
-  
-    // if (width - x < w) {
-    //   // console.log(w, width, x, w - width - x)
-    //   return createVector(-2 * (w - (width - x))/w, 0)
-    // }
-
-    // if (y > height) return createVector(0, 0)
-    // if (y < 0) return createVector(0, 0)
-
-    // if (y < w) {
-    //   return createVector(0, w/(w-y)) ///(25-this.position.x)
-    // }
-  
-    // if (height - y < w) {
-    //   // console.log(w, width, x, w - width - x)
-    //   return createVector(0,-w/(w - (height - y)))
-    // }
-
-    // return createVector(0, 0)
+    
   }
 }
-// Original:
-// The Nature of Code
-// Daniel Shiffman
-// http://natureofcode.com
-//
-// Modified:
-// David Wagstaff
+
+class Plankton extends Boid {
+  constructor(x, y, vx, vy, r, color='green') {
+    super(x, y, vx, vy, r, color)
+    // console.log('plankton', color, this.color)
+  }
+
+  render() {
+    let theta = this.velocity.heading() + radians(90)
+    fill(this.color)
+    push()
+    translate(this.position.x, this.position.y)
+    rotate(theta)
+    ellipse(0, 0, this.r*1.5, this.r * 3.5 )
+    pop()
+  }
+  
+  terror() {
+    let boids = blueFlock.boids
+    let desiredseparation = 80.0
+    let steer = createVector(0, 0)
+    let count = 0
+    // For every boid in the system, check if it's too close
+    for (let boid of boids) {
+      let d = p5.Vector.dist(this.position, boid.position)
+      // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+      if ((d > 0) && (d < desiredseparation)) {
+        // Calculate vector pointing away from neighbor
+        let diff = p5.Vector.sub(this.position, boid.position)
+        diff.normalize()
+        diff.div(d)        // Weight by distance
+        steer.add(diff)
+        count++            // Keep track of how many
+      }
+    }
+    // Average -- divide by how many
+    if (count > 0) {
+      steer.div(count)
+    }
+
+    // As long as the vector is greater than 0
+    if (steer.mag() > 0) {
+      // Implement Reynolds: Steering = Desired - Velocity
+      steer.normalize()
+      steer.mult(this.maxspeed)
+      steer.sub(this.velocity)
+      steer.limit(this.maxforce)
+    }
+    return steer
+  }
+  
+}
+
+class BlueFish extends Boid {
+  constructor(x, y, vx, vy, r, color='blue') {
+    super(x, y, vx, vy, r, color)
+    // console.log('BlueFish', this.color)
+  }
+
+  render() {
+    let theta = this.velocity.heading() + radians(90)
+    fill(this.color)
+    push()
+    translate(this.position.x, this.position.y)
+    rotate(theta)
+    stroke(this.color)
+    beginShape()
+    // TRIANGLE
+    // vertex(0, -this.r * 2)
+    // vertex(-this.r, this.r * 2)
+    // vertex(this.r, this.r * 2)
+    
+    // FISH
+    // adding random offsets gives a shimmering illusion of movement
+    vertex(0, -this.r * 1.5) // mouth
+    vertex(-this.r + random(-2,2), this.r * 3 + random(-2,2))   // left tail tip
+    vertex(0, this.r *1.5)  // butt
+    vertex(this.r + random(-2,2), this.r * 3 + random(-2,2))    // right tail tip
+    endShape(CLOSE)
+    stroke('black')
+    // stroke(this.color)
+    ellipse(0, 0, this.r*1.5, this.r * 3.5 )
+    pop()
+    // stroke('blue')
+    // stroke(200)
+    // push()
+    // translate(this.position.x, this.position.y)
+    // rotate(theta)
+    // stroke('black')
+    // ellipse(0, 0, this.r*1.5, this.r * 3.5 )
+    // beginShape()
+    // TRIANGLE
+    // vertex(0, -this.r * 2)
+    // vertex(-this.r, this.r * 2)
+    // vertex(this.r, this.r * 2)
+
+    // FISH
+    // vertex(0, -this.r * 1.5) // mouth
+    // vertex(-this.r, this.r * 2)   // left tail
+    // vertex(0, this.r * 1.6)  // between tail
+    // vertex(this.r, this.r * 2)    // right tail
+    // endShape(CLOSE)
+    // pop()
+  } 
+  
+  terror() {
+    let boids = yellowFlock.boids
+    let desiredseparation = 100.0
+    let steer = createVector(0, 0)
+    let count = 0
+    // For every boid in the system, check if it's too close
+    for (let boid of boids) {
+      let d = p5.Vector.dist(this.position, boid.position)
+      // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+      if ((d > 0) && (d < desiredseparation)) {
+        // Calculate vector pointing away from neighbor
+        let diff = p5.Vector.sub(this.position, boid.position)
+        diff.normalize()
+        diff.div(d)        // Weight by distance
+        steer.add(diff)
+        count++            // Keep track of how many
+      }
+    }
+    // Average -- divide by how many
+    if (count > 0) {
+      steer.div(count)
+    }
+
+    // As long as the vector is greater than 0
+    if (steer.mag() > 0) {
+      // Implement Reynolds: Steering = Desired - Velocity
+      steer.normalize()
+      steer.mult(this.maxspeed)
+      steer.sub(this.velocity)
+      steer.limit(this.maxforce)
+    }
+    return steer
+  }
+
+}
+
+class Tuna extends Boid {
+  constructor(x, y, vx, vy, r, color='blue') {
+    super(x, y, vx, vy, r, color)
+    // console.log('BlueFish', this.color)
+  }
+
+  render() {
+    // Draw a triangle rotated in the direction of velocity
+    let theta = this.velocity.heading() + radians(90)
+    fill(this.color)
+    // stroke(200)
+    push()
+    translate(this.position.x, this.position.y)
+    rotate(theta)
+    stroke(this.color)
+    beginShape()
+    // TRIANGLE
+    // vertex(0, -this.r * 2)
+    // vertex(-this.r, this.r * 2)
+    // vertex(this.r, this.r * 2)
+
+    // FISH
+    vertex(0, -this.r * 1.5) // mouth
+    vertex(-this.r/2, -this.r)    // left body upper
+    vertex(-this.r * 1.5, this.r*.5)  // left fin
+    vertex(-this.r/2, -this.r/20)  // left body lower
+    vertex(-this.r, this.r * 2)   // left tail
+    vertex(0, this.r * 1.6)  // between tail
+    vertex(this.r, this.r * 2)    // right tail
+    vertex(this.r/2, -this.r/20)  // right body lower
+    vertex(this.r * 1.5, this.r*.5)  // right fin
+    vertex(this.r/2, -this.r)    // right body upper
+    endShape(CLOSE)
+    stroke('black')
+    ellipse(0, 0, this.r*1.5, this.r * 3.5 )
+    pop()
+  }
+  
+  terror() {
+    return createVector(0, 0) // yellow fish aint scared of shit
+  }
+
+}
 </script>
 </body>
 </html>
