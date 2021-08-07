@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Sam's Aquarium</title>
   <style>
     html {
       background-color: black;
@@ -21,7 +21,57 @@
 
 
 <!-- FUTURE IDEAS
-Swarm Wars
+Future versions will 
+1. Allow more fish before slow down. (Dan's QUADTREE)
+  A. Check if some plankton are too small to be seen.
+2. Work on touch devices. (touches)
+3. Have a coral. (Dan's tree)
+4. Use a tide maker. (10 sec alternate left to right, stronger on top than bottom)
+  A. indicate tide? two straws?
+5. Predation. (Dan't collision detection)
+  A. Yellow are canibals. Will eat any yellow half its size.
+  B. Won't eat something too small or too large?
+  C. Will have bug when fish are added to tank because they all overlap.
+6. Growth.
+  A. Eating makes it bigger.
+  B. Plankton autogrow to max size.
+7. Starvation.
+  A. Must eat something in a fixed time, or die and sink to bottom.
+  B. Eaten by crabs.
+8. Mating.
+9. Fix some quirks in the current models.
+  A. 2 fish together end up glued nose to butt
+  B. 1 or 2 fish get locked in perfect vertical up to top wall then down to bottom wall.
+10. Non fish species.
+  A. Crabs walk on bottom.
+    i. eat dead fish that sink to the bottom.
+    ii. don't school.
+    iii. claws go up and snap when big fish get near
+    iv. claws are down by default. snap down when feeding.
+    v. no limit on crabs feeding on a fish
+    vi. crabs will always move to dead fish
+  B. Jelly Fish
+    i. one small monocolor eats plankton, planton don't avoid it.
+    ii. one large bicolor eats blue and yellow fish; they don't avoid it.
+      a. drops dead blue and yellow fish.
+    iii. don't school.
+    iv. don't interact with each other.
+    v. swim slowly up and down, drift left and right.
+  C. Nudibranch
+    i. eats plankton
+    ii. rainbow color
+    iii. kills blue and yellow
+    iv. blue and yellow avoid it.
+    v. plankton avoid it.
+11. Sandy bottom
+12. change colors of water and fish
+13. manipulate individual fish
+14. feed fish
+15. bubbles https://editor.p5js.org/siorikitajima/sketches/JISVg1TY3
+
+
+
+  Swarm Wars
 A New Hive
 
 The evil sith queen knows of your existence and has sent drone droids to destroy you.
@@ -39,7 +89,7 @@ Single tap on phone -->
   <main></main>
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.min.js"></script>
-
+<script src="brainCoral.js"></script>
 <script>
 // function toggleFullScreen() {
 //   let fs = fullscreen()
@@ -53,65 +103,69 @@ function preload() {
   font = loadFont('https://raw.githubusercontent.com/tonsky/FiraCode/master/distr/ttf/FiraCode-Regular.ttf');
 }
 
-function everythingDies() {
-  greenFlock.boids.length = 0
-  blueFlock.boids.length = 0
-  yellowFlock.boids.length = 0
-  background(0);
-  textFont(font);
-  textSize(width/20);
-  textAlign(CENTER, CENTER);
-  fill('red')
-  // let time = millis();
-  // rotateX(time / 10000);
-  // rotateZ(time / 12340);
-  text('Sammy killed her fish', width/2,height/2);
-  setTimeout(function(){ die = false; }, 1500);
-  // die = false
-}
+// let params = (new URL(document.location)).searchParams
+// let waterColor = params.get('waterColor')
+// let planktonColor = params.get('planktonColor')
+// let mediumColor = params.get('mediumColor')
+// let bigColor = params.get('bigColor')
+// console.log(waterColor, planktonColor, mediumColor, bigColor)
 
 let greenFlock
 let blueFlock
 let yellowFlock
-let die = false
 
+const dd = 50 // dd is death distance
+const dd2 = dd*dd // comparing squares is faster than square root
 function mouseClicked({shiftKey, altKey, ctrlKey}) {
   if (shiftKey) {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 50; i++) {
       greenFlock.addBoid(new Plankton(mouseX, mouseY, random(-1, 1), random(-1, 1), random(1.5,3)/2))
     }
   }
   else if (altKey) {
     for (let i = 0; i < 9; i++) {
-      blueFlock.addBoid(new BlueFish(mouseX, mouseY, random(-1, 1), random(-1, 1), random(2,4)))
+      blueFlock.addBoid(new BlueFish(mouseX, mouseY, random(-1, 1), random(-1, 1), random(2,4), 'blue'))
     }
   }
   else if (ctrlKey) {
     for (let i = 0; i < 3; i++) {
-      yellowFlock.addBoid(new Boid(mouseX, mouseY, random(-1, 1), random(-1, 1), random(3,6), '#ffffcc'))
+      yellowFlock.addBoid(new Boid(mouseX, mouseY, random(-1, 1), random(-1, 1), random(3,6), 'yellow'))
     }
   }
-  else die=true //everythingDies()
-
+  else {
+    for (let b of greenFlock.boids) {
+      greenFlock.boids = greenFlock.boids.filter(b => (b.position.x - mouseX)**2 + (b.position.y - mouseY)**2 > dd2)
+    }
+    for (let b of blueFlock.boids) {
+      blueFlock.boids = blueFlock.boids.filter(b => (b.position.x - mouseX)**2 + (b.position.y - mouseY)**2 > dd2)
+    }
+    for (let b of yellowFlock.boids) {
+      yellowFlock.boids = yellowFlock.boids.filter(b => (b.position.x - mouseX)**2 + (b.position.y - mouseY)**2 > dd2)
+    }
+  }
+  
   return false; // prevent default
 }
 
 function setup() {
-  // fullscreen()
-  // createCanvas(720, 400)
-  createCanvas(windowWidth-10, windowHeight-20, WEBGL)
+//   // fullscreen()
+//   // createCanvas(720, 400)
+  createCanvas(windowWidth-10, windowHeight-20)
+  // translate(-width/2, -height/2, 0)
+  setupBrainCoral()
   greenFlock = new Flock()
   blueFlock = new Flock()
   yellowFlock = new Flock()
 }
 
 function draw() {
-  background(0)
-  translate(-width/2,-height/2,0)
+  background('black')
+  drawBrainCoral()
+  // stroke('black')
+  // noLoop()
   greenFlock.run()
   blueFlock.run()
   yellowFlock.run()
-  if (die) everythingDies()
 }
 
 
@@ -123,7 +177,7 @@ class Flock {
   constructor() {
     this.boids = []
   }
-
+  
   run() {
     for (let boid of this.boids) {
       boid.run(this.boids)  // Passing the entire list of boids to each boid individually
@@ -139,7 +193,7 @@ class Flock {
 class Boid {
   
   constructor(x, y, vx, vy, r, color) {
-
+    
     this.color = color
     // console.log(color, this.color)
     this.position = createVector(x, y)
@@ -149,19 +203,19 @@ class Boid {
     this.maxspeed = 3    // Maximum speed
     this.maxforce = 0.05 // Maximum steering force
   }
-
+  
   run(boids) {
     this.flock(boids)
     this.update()
     // this.borders()
     this.render()
   }
-
+  
   applyForce(force) {
     // We could add mass here if we want A = F / M
     this.acceleration.add(force)
   }
-
+  
   // We accumulate a new acceleration each time based on three rules
   flock(boids) {
     let sep = this.separate(boids)   // Separation
@@ -185,7 +239,7 @@ class Boid {
     this.applyForce(rep)
     this.applyForce(ter)
   }
-
+  
   // Method to update location
   update() {
     // Update velocity
@@ -196,7 +250,7 @@ class Boid {
     // Reset accelertion to 0 each cycle
     this.acceleration.mult(0)
   }
-
+  
   // A method that calculates and applies a steering force towards a target
   // STEER = DESIRED MINUS VELOCITY
   seek(target) {
@@ -209,12 +263,10 @@ class Boid {
     steer.limit(this.maxforce)  // Limit to maximum steering force
     return steer
   }
-
+  
   render() {
-    // Draw a triangle rotated in the direction of velocity
     let theta = this.velocity.heading() + radians(90)
     fill(this.color)
-    // stroke(200)
     push()
     translate(this.position.x, this.position.y)
     rotate(theta)
@@ -224,24 +276,20 @@ class Boid {
     // vertex(0, -this.r * 2)
     // vertex(-this.r, this.r * 2)
     // vertex(this.r, this.r * 2)
-
+    
     // FISH
+    // adding random offsets gives a shimmering illusion of movement
     vertex(0, -this.r * 1.5) // mouth
-    vertex(-this.r/2, -this.r)    // left body upper
-    vertex(-this.r * 1.5 + random(-2,2), this.r*.5 + random(-2,2))  // left fin tip
-    vertex(-this.r/2, -this.r/20)  // left body lower
-    vertex(-this.r, this.r * 2)   // left tail tip
-    vertex(0, this.r * 1.6)  // between tails
-    vertex(this.r, this.r * 2)    // right tail tip
-    vertex(this.r/2, -this.r/20)  // right body lower
-    vertex(this.r * 1.5 + random(-2,2), this.r*.5 + random(-2,2))  // right fin tip
-    vertex(this.r/2, -this.r)    // right body upper
+    vertex(-this.r + random(-2,2), this.r * 3 + random(-2,2))   // left tail tip
+    vertex(0, this.r *1.5)  // butt
+    vertex(this.r + random(-2,2), this.r * 3 + random(-2,2))    // right tail tip
     endShape(CLOSE)
     stroke('black')
+    // stroke(this.color)
     ellipse(0, 0, this.r*1.5, this.r * 3.5 )
     pop()
   }
-
+  
   // Wraparound
   borders() {
     if (this.position.x < this.r)          this.position.x = width  + this.r
@@ -249,7 +297,7 @@ class Boid {
     if (this.position.x > width  - this.r) this.position.x = -this.r
     if (this.position.y > height - this.r) this.position.y = -this.r
   }
-
+  
   // Separation
   // Method checks for nearby boids and steers away
   separate(boids) {
@@ -273,7 +321,7 @@ class Boid {
     if (count > 0) {
       steer.div(count)
     }
-
+    
     // As long as the vector is greater than 0
     if (steer.mag() > 0) {
       // Implement Reynolds: Steering = Desired - Velocity
@@ -284,11 +332,11 @@ class Boid {
     }
     return steer
   }
-
+  
   terror() {
     return createVector(0, 0) // yellow fish aint scared of shit
   }
-
+  
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   align(boids) {
@@ -313,7 +361,7 @@ class Boid {
       return createVector(0, 0)
     }
   }
-
+  
   // Cohesion
   // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
   cohesion(boids) {
@@ -334,11 +382,11 @@ class Boid {
       return createVector(0, 0)
     }
   }
-
+  
   attractions() {
     return createVector(0,0)
   }
-
+  
   repulsions() {
     const w = 10 // distance from (w)all before repulsion kicks in
     const walls = [
@@ -349,54 +397,54 @@ class Boid {
     ]
     // fill('white')
     // for (let wall of walls) {
-    //   circle(wall.position.x, wall.position.y, 10)
-    // }
-    // return this.separate(walls)
-    let boids = walls
-    let desiredseparation = 10.0
-    let steer = createVector(0, 0)
-    let count = 0
-    // For every boid in the system, check if it's too close
-    for (let boid of boids) {
-      let d = p5.Vector.dist(this.position, boid.position)
-      // if (d < 0) console.error('negative distance!!!')
-      // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-      if (d < desiredseparation) {
-        // Calculate vector pointing away from neighbor
-        let diff = p5.Vector.sub(this.position, boid.position)
-        // diff.normalize()
-        // diff.div(d)        // Weight by distance
-        steer.add(diff)
-        // count++            // Keep track of how many
+      //   circle(wall.position.x, wall.position.y, 10)
+      // }
+      // return this.separate(walls)
+      let boids = walls
+      let desiredseparation = 10.0
+      let steer = createVector(0, 0)
+      let count = 0
+      // For every boid in the system, check if it's too close
+      for (let boid of boids) {
+        let d = p5.Vector.dist(this.position, boid.position)
+        // if (d < 0) console.error('negative distance!!!')
+        // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+        if (d < desiredseparation) {
+          // Calculate vector pointing away from neighbor
+          let diff = p5.Vector.sub(this.position, boid.position)
+          // diff.normalize()
+          // diff.div(d)        // Weight by distance
+          steer.add(diff)
+          // count++            // Keep track of how many
+        }
       }
-    }
-    return steer
-    // return createVector(0, 0)
-    // Average -- divide by how many
-    // if (count > 0) {
-    //   steer.div(count)
-    // }
-
-    // As long as the vector is greater than 0
-    // if (steer.mag() > 0) {
-    //   // Implement Reynolds: Steering = Desired - Velocity
-    //   steer.normalize()
-    //   steer.mult(this.maxspeed)
-    //   steer.sub(this.velocity)
-    //   steer.limit(this.maxforce)
-    // }
-    const {x,y} = this.position
+      return steer
+      // return createVector(0, 0)
+      // Average -- divide by how many
+      // if (count > 0) {
+        //   steer.div(count)
+        // }
+        
+        // As long as the vector is greater than 0
+        // if (steer.mag() > 0) {
+          //   // Implement Reynolds: Steering = Desired - Velocity
+          //   steer.normalize()
+          //   steer.mult(this.maxspeed)
+          //   steer.sub(this.velocity)
+          //   steer.limit(this.maxforce)
+          // }
+          const {x,y} = this.position
     let dx = Math.abs(width - x)
     let dy = Math.abs(height - y)
-
+    
     if (dx > w) return createVector(0, 0)
     if (dy > w) return createVector(0, 0)
-
+    
     if (x <=w) return createVector(w, 0).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
     if (x > width-w) return createVector(-w, 0).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
     if (y <=w) return createVector(0, w).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
     if (y > height-w) return createVector(0, -w).mult(this.maxspeed).sub(this.velocity).limit(this.maxforce)
-
+    
     
   }
 }
@@ -405,11 +453,14 @@ class Plankton extends Boid {
   constructor(x, y, vx, vy, r, color='green') {
     super(x, y, vx, vy, r, color)
     // console.log('plankton', color, this.color)
+    this.maxspeed = 2.4    // Maximum speed
+    this.maxforce = 0.07 // Maximum steering force
   }
-
+  
   render() {
     let theta = this.velocity.heading() + radians(90)
     fill(this.color)
+    console.log(this.color)
     push()
     translate(this.position.x, this.position.y)
     rotate(theta)
@@ -439,7 +490,7 @@ class Plankton extends Boid {
     if (count > 0) {
       steer.div(count)
     }
-
+    
     // As long as the vector is greater than 0
     if (steer.mag() > 0) {
       // Implement Reynolds: Steering = Desired - Velocity
@@ -457,8 +508,10 @@ class BlueFish extends Boid {
   constructor(x, y, vx, vy, r, color='blue') {
     super(x, y, vx, vy, r, color)
     // console.log('BlueFish', this.color)
+    this.maxspeed = 2.7    // Maximum speed
+    this.maxforce = 0.06 // Maximum steering force
   }
-
+  
   render() {
     let theta = this.velocity.heading() + radians(90)
     fill(this.color)
@@ -495,7 +548,7 @@ class BlueFish extends Boid {
     // vertex(0, -this.r * 2)
     // vertex(-this.r, this.r * 2)
     // vertex(this.r, this.r * 2)
-
+    
     // FISH
     // vertex(0, -this.r * 1.5) // mouth
     // vertex(-this.r, this.r * 2)   // left tail
@@ -527,7 +580,7 @@ class BlueFish extends Boid {
     if (count > 0) {
       steer.div(count)
     }
-
+    
     // As long as the vector is greater than 0
     if (steer.mag() > 0) {
       // Implement Reynolds: Steering = Desired - Velocity
@@ -538,7 +591,7 @@ class BlueFish extends Boid {
     }
     return steer
   }
-
+  
 }
 
 class Tuna extends Boid {
@@ -546,7 +599,7 @@ class Tuna extends Boid {
     super(x, y, vx, vy, r, color)
     // console.log('BlueFish', this.color)
   }
-
+  
   render() {
     // Draw a triangle rotated in the direction of velocity
     let theta = this.velocity.heading() + radians(90)
@@ -561,7 +614,7 @@ class Tuna extends Boid {
     // vertex(0, -this.r * 2)
     // vertex(-this.r, this.r * 2)
     // vertex(this.r, this.r * 2)
-
+    
     // FISH
     vertex(0, -this.r * 1.5) // mouth
     vertex(-this.r/2, -this.r)    // left body upper
@@ -582,8 +635,31 @@ class Tuna extends Boid {
   terror() {
     return createVector(0, 0) // yellow fish aint scared of shit
   }
-
+  
 }
 </script>
 </body>
 </html>
+<!-- Elephant Graveyard of Code
+
+let die = false
+ 
+  if (die) everythingDies()
+
+function everythingDies() {
+  greenFlock.boids.length = 0
+  blueFlock.boids.length = 0
+  yellowFlock.boids.length = 0
+  background(0);
+  textFont(font);
+  textSize(width/20);
+  textAlign(CENTER, CENTER);
+  fill('red')
+  // let time = millis();
+  // rotateX(time / 10000);
+  // rotateZ(time / 12340);
+  text('Sammy killed her fish', width/2,height/2);
+  setTimeout(function(){ die = false; }, 1500);
+  // die = false
+} 
+-->
